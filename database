@@ -1,0 +1,62 @@
+import sqlite3
+
+# 1. Buat/Hubungkan ke Database
+conn = sqlite3.connect('users.db')
+cursor = conn.cursor()
+
+# 2. Buat tabel pengguna jika belum ada
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    )
+''')
+conn.commit()
+
+def register():
+    print("\n--- FITUR REGISTRASI ---")
+    username = input("Masukkan username baru: ")
+    password = input("Masukkan password baru: ")
+    try:
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        conn.commit()
+        print("Registrasi berhasil! Silakan login.")
+    except sqlite3.IntegrityError:
+        print("Username sudah terdaftar! Gunakan username lain.")
+
+def login():
+    print("\n--- FITUR LOGIN ---")
+    username = input("Username: ")
+    password = input("Password: ")
+    
+    cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+    user = cursor.fetchone()
+    
+    if user:
+        print(f"\nLogin berhasil! Selamat datang, {username}.")
+        # Program utama kamu dipanggil di sini setelah login berhasil
+        return True
+    else:
+        print("\nUsername atau password salah!")
+        return False
+
+# Menu Utama
+while True:
+    print("\n=== MENU PROGRAM ===")
+    print("1. Login")
+    print("2. Buat Akun Baru")
+    print("3. Keluar")
+    pilihan = input("Pilih menu (1/2/3): ")
+    
+    if pilihan == '1':
+        if login():
+            break
+    elif pilihan == '2':
+        register()
+    elif pilihan == '3':
+        break
+    else:
+        print("Pilihan tidak valid.")
+
+conn.close()
